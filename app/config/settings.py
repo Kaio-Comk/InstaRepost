@@ -42,6 +42,13 @@ class Settings(BaseSettings):
     target_username: str = "perfil_autorizado"
     watch_dir: str = "data/inbox"
 
+    # Login do instaloader (apenas se SOURCE_PROVIDER=instaloader).
+    # ⚠️ Use uma conta DESCARTÁVEL — automação pode resultar em limitação/ban pela Meta.
+    instaloader_user: str = ""
+    # Opcional: se vazio, o adaptador usa uma sessão salva (recomendado, lida com 2FA).
+    instaloader_password: str = ""
+    instaloader_max_items: int = 6
+
     # --- Validação de download ---
     max_video_mb: float = 300.0
     min_video_mb: float = 0.05

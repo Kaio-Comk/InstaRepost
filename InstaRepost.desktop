@@ -1,0 +1,18 @@
+[Desktop Entry]
+Categories=Network;
+Comment[pt_BR]=Sobe o painel de aprovação do InstaRepost e abre no navegador
+Comment=Sobe o painel de aprovação do InstaRepost e abre no navegador
+Exec="/home/kaio/Área de trabalho/InstaRepost/iniciar_painel.sh"
+GenericName[pt_BR]=InstaRepost Painel
+GenericName=InstaRepost Panel
+Icon=utilities-terminal
+MimeType=
+Name[pt_BR]=InstaRepost
+Name=InstaRepost
+Path=/home/kaio/Área de trabalho/InstaRepost
+StartupNotify=true
+Terminal=true
+Type=Application
+Version=1.0
+X-KDE-SubstituteUID=false
+X-KDE-Username=
