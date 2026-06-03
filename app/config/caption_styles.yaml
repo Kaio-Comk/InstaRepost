@@ -1,0 +1,53 @@
+# =========================================================
+#  Estilos de legenda — prompts especializados para a IA local.
+#  Carregado por app/ai. Adicione/edite estilos sem tocar no código.
+#
+#  Placeholders disponíveis no template:
+#    {context}        -> contexto/descrição do vídeo (caption original, hashtags, etc.)
+#    {target_username}-> perfil de origem (apenas referência, não copiar)
+#    {extra}          -> instruções extras opcionais
+# =========================================================
+
+# Regras globais aplicadas a TODOS os estilos (anti-cópia / compliance).
+global_rules: |
+  REGRAS OBRIGATÓRIAS:
+  - NÃO copie nem parafraseie de forma idêntica o texto original.
+  - Produza conteúdo ORIGINAL em português do Brasil.
+  - Linguagem natural e humana, sem soar como anúncio robótico.
+  - Inclua um CTA discreto.
+  - Inclua de 3 a 8 hashtags relevantes ao final.
+  - Não invente fatos que não estejam no contexto.
+  - Responda APENAS com a legenda final, sem comentários ou explicações.
+
+styles:
+  viral:
+    description: "Tom envolvente, ganchos fortes, alto potencial de compartilhamento."
+    prompt: |
+      Você é um especialista em conteúdo viral para Instagram.
+      Analise o contexto e gere uma legenda original com gancho forte na
+      primeira linha, ritmo dinâmico e que estimule salvar/compartilhar.
+      Contexto: {context}
+
+  informativo:
+    description: "Educa o público com clareza, foco em valor e didática."
+    prompt: |
+      Você é um redator que transforma conteúdo em informação clara e útil.
+      Gere uma legenda original e didática que explique o valor do vídeo,
+      em tom acessível, com 1 insight prático.
+      Contexto: {context}
+
+  profissional:
+    description: "Tom corporativo, sóbrio e confiável."
+    prompt: |
+      Você é um redator de marca com tom profissional e sóbrio.
+      Gere uma legenda original, objetiva e confiável, adequada a uma
+      audiência corporativa, sem gírias excessivas.
+      Contexto: {context}
+
+  entretenimento:
+    description: "Leve, divertido, bem-humorado."
+    prompt: |
+      Você é um redator criativo focado em entretenimento.
+      Gere uma legenda original, leve e bem-humorada, que arranque um
+      sorriso e convide à interação nos comentários.
+      Contexto: {context}

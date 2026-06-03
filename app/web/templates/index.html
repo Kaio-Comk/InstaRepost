@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>InstaRepost — Aprovação</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { font-family: system-ui, sans-serif; margin: 0; background: #0f1115; color: #e6e6e6; }
+    header { padding: 16px 24px; background: #161a21; border-bottom: 1px solid #232a36;
+             display: flex; align-items: center; justify-content: space-between; }
+    header h1 { font-size: 18px; margin: 0; }
+    .meta { font-size: 12px; color: #8a94a6; }
+    main { padding: 24px; display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 20px; }
+    .card { background: #161a21; border: 1px solid #232a36; border-radius: 12px; overflow: hidden; }
+    .card video { width: 100%; background: #000; max-height: 360px; }
+    .card .body { padding: 14px; }
+    .post { font-size: 12px; color: #8a94a6; word-break: break-all; }
+    textarea { width: 100%; min-height: 120px; box-sizing: border-box; background: #0f1115;
+               color: #e6e6e6; border: 1px solid #2b3340; border-radius: 8px; padding: 8px; font-size: 13px; }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+    button, select { background: #2b3340; color: #e6e6e6; border: 1px solid #3a4456;
+             border-radius: 8px; padding: 7px 12px; cursor: pointer; font-size: 13px; }
+    button.primary { background: #2563eb; border-color: #2563eb; }
+    button.ok { background: #16a34a; border-color: #16a34a; }
+    button.danger { background: #b91c1c; border-color: #b91c1c; }
+    .badge { font-size: 11px; padding: 2px 8px; border-radius: 999px; }
+    .badge.yes { background: #14532d; color: #bbf7d0; }
+    .badge.no { background: #3f1d1d; color: #fecaca; }
+    form { margin: 0; }
+    .empty { padding: 60px; text-align: center; color: #8a94a6; grid-column: 1 / -1; }
+    .topbar-actions form { display: inline; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>📥 InstaRepost — Painel de Aprovação</h1>
+      <div class="meta">
+        Origem: <b>{{ settings.source_provider }}</b> ·
+        Publisher: <b>{{ settings.publisher }}</b> ·
+        Aprovação manual: <b>{{ "sim" if settings.require_manual_approval else "não" }}</b>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <form action="/publish" method="post" onsubmit="return confirm('Publicar todos os aprovados?');">
+        <button class="primary" type="submit">🚀 Publicar aprovados</button>
+      </form>
+    </div>
+  </header>
+
+  <main>
+    {% if not videos %}
+      <div class="empty">Nenhum vídeo pendente. Adicione conteúdo autorizado e rode a ingestão.</div>
+    {% endif %}
+
+    {% for v in videos %}
+      <div class="card">
+        {% if v.has_file %}
+          <video controls preload="metadata" src="/video/{{ v.id }}"></video>
+        {% endif %}
+        <div class="body">
+          <div class="post">
+            #{{ v.id }} · {{ v.post }}
+            {% if v.source_url %}· <a href="{{ v.source_url }}" target="_blank">origem</a>{% endif %}
+          </div>
+          <div style="margin:8px 0;">
+            {% if v.approved %}
+              <span class="badge yes">aprovada</span>
+            {% else %}
+              <span class="badge no">pendente</span>
+            {% endif %}
+            {% if v.style %}<span class="meta">estilo: {{ v.style }}</span>{% endif %}
+          </div>
+
+          <form action="/caption/{{ v.id }}/edit" method="post">
+            <textarea name="caption_text">{{ v.caption }}</textarea>
+            <div class="row">
+              <button type="submit">💾 Salvar edição</button>
+            </div>
+          </form>
+
+          <div class="row">
+            <form action="/caption/{{ v.id }}/approve" method="post">
+              <button class="ok" type="submit">✅ Aprovar</button>
+            </form>
+            <form action="/caption/{{ v.id }}/reject" method="post">
+              <button class="danger" type="submit">❌ Rejeitar</button>
+            </form>
+            <form action="/caption/{{ v.id }}/regenerate" method="post">
+              <select name="style">
+                <option value="">(regenerar — mesmo estilo)</option>
+                <option value="viral">viral</option>
+                <option value="informativo">informativo</option>
+                <option value="profissional">profissional</option>
+                <option value="entretenimento">entretenimento</option>
+              </select>
+              <button type="submit">🔁 Reprocessar</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </main>
+</body>
+</html>
