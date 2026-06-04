@@ -6,7 +6,7 @@ Wants=network-online.target
 [Service]
 Type=simple
 WorkingDirectory=/home/kaio/Área de trabalho/InstaRepost
-ExecStart=/home/kaio/Área de trabalho/InstaRepost/iniciar_auto.sh
+ExecStart="/home/kaio/Área de trabalho/InstaRepost/iniciar_auto.sh"
 Restart=on-failure
 RestartSec=30
 # Mantém o serviço de pé; reinicia se a internet/túnel cair.
