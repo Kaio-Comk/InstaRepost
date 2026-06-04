@@ -67,6 +67,15 @@ def cmd_publish(_args) -> int:
     return 0
 
 
+def cmd_token(args) -> int:
+    from app.publishers.token_store import ensure_fresh, status
+
+    ensure_fresh(force=args.refresh)  # semeia o store; renova de verdade só com --refresh
+    st = status()
+    logger.info("Status do token IG: %s", st)
+    return 0
+
+
 def cmd_web(_args) -> int:
     from app.web.api import run_web
 
@@ -98,6 +107,10 @@ def build_parser() -> argparse.ArgumentParser:
     p_fetch.set_defaults(func=cmd_fetch)
 
     sub.add_parser("publish", help="Publica aprovados").set_defaults(func=cmd_publish)
+
+    p_tok = sub.add_parser("token", help="Status / refresh do token oficial")
+    p_tok.add_argument("--refresh", action="store_true", help="Força a renovação agora")
+    p_tok.set_defaults(func=cmd_token)
     sub.add_parser("web", help="Sobe o painel FastAPI").set_defaults(func=cmd_web)
     sub.add_parser("scheduler", help="Roda o agendador").set_defaults(func=cmd_scheduler)
     return parser

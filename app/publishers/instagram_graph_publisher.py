@@ -36,8 +36,11 @@ class InstagramGraphPublisher(Publisher):
     def __init__(self) -> None:
         s = get_settings()
         self.ig_user_id = s.ig_user_id
-        self.access_token = s.ig_access_token
         self.base = s.ig_api_base.rstrip("/")
+        # Token gerenciado: renova automaticamente quando perto de expirar.
+        from app.publishers.token_store import ensure_fresh
+
+        self.access_token = ensure_fresh()
         if not self.ig_user_id or not self.access_token:
             raise RuntimeError(
                 "Credenciais da Graph API ausentes (IG_USER_ID / IG_ACCESS_TOKEN). "

@@ -14,6 +14,7 @@ No modo manual, processa a pasta data/inbox e publica 1 por ciclo.
 """
 from __future__ import annotations
 
+import time
 from pathlib import Path
 from typing import Optional
 
@@ -90,6 +91,22 @@ def _pop_one_url(path: Path) -> Optional[str]:
     return url
 
 
+def _recently_posted(settings) -> bool:
+    """True se o último post foi há menos que ~90% do intervalo (evita rajadas no restart)."""
+    f = settings.data_path / "last_post.txt"
+    if not f.exists():
+        return False
+    try:
+        last = float(f.read_text(encoding="utf-8").strip())
+    except Exception:
+        return False
+    return (time.time() - last) < settings.poll_interval_seconds * 0.9
+
+
+def _mark_posted(settings) -> None:
+    (settings.data_path / "last_post.txt").write_text(str(time.time()), encoding="utf-8")
+
+
 def _tick() -> None:
     settings = get_settings()
     pipeline = PipelineService()
@@ -111,13 +128,26 @@ def _tick() -> None:
         else:
             pipeline.run_ingestion()
 
-    # 2) Publica exatamente 1 (se a publicação automática estiver ligada).
+    # 2) Publica exatamente 1 (se automático e respeitando o intervalo mínimo).
     if settings.require_manual_approval:
         logger.info("Aprovação manual ligada — publique pelo painel.")
         return
+
+    # Renova o token proativamente (mesmo que não publique neste ciclo).
+    if settings.publisher == "instagram_graph":
+        from app.publishers.token_store import ensure_fresh
+
+        ensure_fresh()
+
+    if _recently_posted(settings):
+        logger.info("Post recente (< intervalo mínimo) — pulando publicação neste ciclo.")
+        return
+
     report = pipeline.publish_one()
     for msg in report.messages:
         logger.info(msg)
+    if report.published > 0:
+        _mark_posted(settings)
 
 
 def run_scheduler() -> None:
