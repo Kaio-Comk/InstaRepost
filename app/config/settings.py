@@ -84,6 +84,9 @@ class Settings(BaseSettings):
     poll_interval_seconds: int = 900
     # Fila de URLs consumida pelo scheduler (modo instaloader): 1 link por linha.
     url_queue_file: str = "data/queue.txt"
+    # Descoberta automática: busca Reels novos do TARGET_USERNAME e enche a fila.
+    auto_discovery: bool = False
+    discovery_amount: int = 8
 
     # --- Web ---
     web_host: str = "127.0.0.1"

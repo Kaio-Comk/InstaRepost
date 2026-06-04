@@ -1,0 +1,16 @@
+[Unit]
+Description=InstaRepost 24/7 (painel + tunel Cloudflare + auto-post 1/hora)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/kaio/Área de trabalho/InstaRepost
+ExecStart=/home/kaio/Área de trabalho/InstaRepost/iniciar_auto.sh
+Restart=on-failure
+RestartSec=30
+# Mantém o serviço de pé; reinicia se a internet/túnel cair.
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+
+[Install]
+WantedBy=default.target

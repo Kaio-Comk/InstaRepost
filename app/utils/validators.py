@@ -34,4 +34,8 @@ def clean_caption(text: str, max_len: int = 2200) -> str:
         text = re.sub(r"\n?```$", "", text).strip()
     # Remove tags de "thinking" de modelos como qwen3.
     text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
+    # Remove aspas que o modelo às vezes coloca envolvendo TODA a legenda.
+    quotes = "\"“”"
+    while len(text) >= 2 and text[0] in quotes and text[-1] in quotes:
+        text = text[1:-1].strip()
     return text[:max_len]

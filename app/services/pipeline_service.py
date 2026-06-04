@@ -136,6 +136,34 @@ class PipelineService:
                 jobs.finish(job, JobStatus.FAILED, str(exc))
                 report.log(f"Vídeo {video_id} falhou: {exc}")
 
+    def has_pending_publish(self) -> int:
+        """Quantos vídeos estão processados e aguardando publicação."""
+        with session_scope() as session:
+            return len(VideoRepository(session).list_pending_publish())
+
+    def publish_one(self) -> PipelineReport:
+        """Publica EXATAMENTE um vídeo pendente (o mais antigo). Base do 1/hora."""
+        report = PipelineReport()
+        with session_scope() as session:
+            pending = VideoRepository(session).list_pending_publish()
+            vid = pending[0].id if pending else None
+
+        if vid is None:
+            report.log("Nada pendente para publicar neste ciclo.")
+            return report
+
+        publisher = get_publisher()
+        with session_scope() as session:
+            result = PublishService(session, publisher).publish_video(vid)
+
+        if result.success:
+            if result.external_id not in ("dry-run", None):
+                report.published += 1
+            report.log(f"Publicado vídeo {vid}: {result.external_id}")
+        else:
+            report.log(f"Vídeo {vid} não publicado: {result.message}")
+        return report
+
     def publish_approved(self) -> PipelineReport:
         """Publica todos os vídeos processados, aprovados e ainda não publicados."""
         report = PipelineReport()
