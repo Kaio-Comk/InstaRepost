@@ -25,6 +25,27 @@ def validate_size(size_bytes: int, min_mb: float, max_mb: float) -> bool:
     return min_mb <= mb <= max_mb
 
 
+_QUOTES = "\"“”"
+
+
+def _unwrap_quotes(text: str) -> str:
+    """Remove aspas que o modelo coloca envolvendo a legenda.
+
+    Cobre os casos comuns:
+      "texto"            -> texto
+      "texto             -> texto            (abre e não fecha)
+      "texto" #hashtags  -> texto #hashtags  (fecha antes das hashtags)
+    Aspas internas legítimas (diálogos) no meio do texto são preservadas.
+    """
+    text = text.strip()
+    if text[:1] in _QUOTES:
+        text = text[1:]
+        idx = next((i for i, ch in enumerate(text) if ch in _QUOTES), -1)
+        if idx != -1:  # remove a aspa de fechamento correspondente
+            text = text[:idx] + text[idx + 1:]
+    return text.strip().strip(_QUOTES).strip()
+
+
 def clean_caption(text: str, max_len: int = 2200) -> str:
     """Sanitiza a legenda: remove cercas de markdown e limita ao máximo do Instagram."""
     text = text.strip()
@@ -34,8 +55,5 @@ def clean_caption(text: str, max_len: int = 2200) -> str:
         text = re.sub(r"\n?```$", "", text).strip()
     # Remove tags de "thinking" de modelos como qwen3.
     text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
-    # Remove aspas que o modelo às vezes coloca envolvendo TODA a legenda.
-    quotes = "\"“”"
-    while len(text) >= 2 and text[0] in quotes and text[-1] in quotes:
-        text = text[1:-1].strip()
+    text = _unwrap_quotes(text)
     return text[:max_len]
