@@ -46,6 +46,13 @@ def _unwrap_quotes(text: str) -> str:
     return text.strip().strip(_QUOTES).strip()
 
 
+def ensure_bio_cta(text: str, cta: str) -> str:
+    """Garante a chamada do link na bio. Se a IA esquecer, anexa ao final."""
+    if "bio" in text.lower():
+        return text
+    return f"{text.rstrip()}\n\n{cta}"
+
+
 def clean_caption(text: str, max_len: int = 2200) -> str:
     """Sanitiza a legenda: remove cercas de markdown e limita ao máximo do Instagram."""
     text = text.strip()

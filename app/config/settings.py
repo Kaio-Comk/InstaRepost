@@ -60,6 +60,8 @@ class Settings(BaseSettings):
     ollama_model: str = "qwen3"
     ollama_timeout: int = 120
     default_caption_style: str = "viral"
+    # CTA anexado automaticamente se a IA esquecer de citar o link na bio.
+    bio_cta: str = "🎬 Link pra assistir na nossa bio!"
 
     # --- Aprovação ---
     require_manual_approval: bool = True

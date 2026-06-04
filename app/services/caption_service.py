@@ -6,6 +6,7 @@ from app.config.settings import get_settings
 from app.models.caption import Caption
 from app.repositories import CaptionRepository, VideoRepository
 from app.utils.logging_config import get_logger
+from app.utils.validators import ensure_bio_cta
 
 logger = get_logger(__name__)
 
@@ -31,6 +32,7 @@ class CaptionService:
             style=style,
             target_username=video.profile.username if video.profile else "",
         )
+        text = ensure_bio_cta(text, settings.bio_cta)  # garante o CTA mesmo se a IA esquecer
 
         caption = self.captions.add(
             Caption(
