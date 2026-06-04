@@ -69,6 +69,26 @@ class PipelineService:
         self._process_pending(report)
         return report
 
+    def run_ingestion_urls(self, urls: List[str], username: str | None = None) -> PipelineReport:
+        """Ingesta Reels específicos por URL (caminho estável p/ o instaloader)."""
+        settings = get_settings()
+        username = username or settings.target_username
+        report = PipelineReport()
+
+        source = get_source_provider()
+        if not hasattr(source, "fetch_by_urls"):
+            report.log(f"A origem '{source.name}' não suporta ingestão por URL.")
+            return report
+
+        media = source.fetch_by_urls(urls)
+        with session_scope() as session:
+            result = MonitorService(session, source).register_media(username, media)
+            report.new_videos = len(result.new_videos)
+
+        report.log(f"Ingestão por URL: {report.new_videos} novo(s) vídeo(s).")
+        self._process_pending(report)
+        return report
+
     def _process_pending(self, report: PipelineReport) -> None:
         with session_scope() as session:
             pending_ids = [v.id for v in VideoRepository(session).list_unprocessed()]

@@ -75,6 +75,21 @@ def serve_video(video_id: int):
     return FileResponse(path, media_type="video/mp4")
 
 
+@app.get("/media/{filename}")
+def serve_media(filename: str):
+    """Serve um arquivo de downloads/ por nome.
+
+    É esta rota que o túnel Cloudflare expõe para a Graph API da Meta baixar o
+    vídeo (PUBLIC_MEDIA_BASE_URL = https://<tunel>/media). Protegida contra
+    path traversal: só permite arquivos diretamente dentro de downloads/.
+    """
+    downloads = get_settings().download_path.resolve()
+    target = (downloads / filename).resolve()
+    if target.parent != downloads or not target.is_file():
+        raise HTTPException(404, "Arquivo não encontrado.")
+    return FileResponse(target, media_type="video/mp4")
+
+
 @app.post("/caption/{video_id}/edit")
 def edit_caption(video_id: int, caption_text: str = Form(...)):
     with session_scope() as session:

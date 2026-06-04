@@ -38,6 +38,11 @@ class MonitorService:
             return MonitorResult(new_videos=[], duplicates=0)
 
         found: List[RemoteMedia] = self.source.fetch_new(username)
+        return self.register_media(username, found)
+
+    def register_media(self, username: str, found: List[RemoteMedia]) -> MonitorResult:
+        """Deduplica e persiste uma lista de mídias para o perfil (feed ou por URL)."""
+        profile = self.profiles.get_or_create(username)
         new_ids: List[int] = []
         duplicates = 0
 

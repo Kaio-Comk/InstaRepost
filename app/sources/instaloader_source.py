@@ -16,8 +16,20 @@ Boas práticas implementadas para reduzir agressividade:
 """
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import List, Optional
+
+# Extrai o shortcode de URLs como /reel/<code>/, /p/<code>/, /tv/<code>/
+_SHORTCODE_RE = re.compile(r"instagram\.com/(?:reel|reels|p|tv)/([A-Za-z0-9_-]+)")
+
+
+def extract_shortcode(url_or_code: str) -> str:
+    """Retorna o shortcode a partir de uma URL do Instagram (ou o próprio código)."""
+    m = _SHORTCODE_RE.search(url_or_code)
+    if m:
+        return m.group(1)
+    return url_or_code.strip().strip("/")
 
 from app.config.settings import get_settings
 from app.sources.base import RemoteMedia, SourceProvider
@@ -48,6 +60,7 @@ class InstaloaderSource(SourceProvider):
         self.dest_dir.mkdir(parents=True, exist_ok=True)
         loader = instaloader.Instaloader(
             dirname_pattern=str(self.dest_dir),
+            filename_pattern="{shortcode}",  # nomeia pelo shortcode (não pela data)
             download_pictures=False,
             download_video_thumbnails=False,
             download_comments=False,
@@ -135,6 +148,47 @@ class InstaloaderSource(SourceProvider):
             logger.error("InstaloaderSource falhou: %s", exc)
 
         logger.info("InstaloaderSource: %d Reel(s) coletado(s).", len(items))
+        return items
+
+    def fetch_by_urls(self, urls: List[str]) -> List[RemoteMedia]:
+        """Baixa Reels específicos por URL/shortcode (caminho estável e autorizado).
+
+        Mais confiável que enumerar o feed (que o Instagram bloqueia com 400) e
+        alinhado à autorização: você aponta para os Reels exatos permitidos.
+        """
+        instaloader, loader = self._build_loader()
+        items: List[RemoteMedia] = []
+
+        for raw in urls:
+            shortcode = extract_shortcode(raw)
+            logger.warning("Baixando Reel %s (NÃO-oficial) — confirme autorização.", shortcode)
+            try:
+                post = instaloader.Post.from_shortcode(loader.context, shortcode)
+                if not post.is_video:
+                    logger.warning("%s não é vídeo — ignorado.", shortcode)
+                    continue
+
+                target = self._locate_video(shortcode)
+                if target is None:
+                    loader.download_post(post, target=self.dest_dir.name)
+                    target = self._locate_video(shortcode)
+                    if target is None:
+                        logger.error("Vídeo de %s não localizado após download.", shortcode)
+                        continue
+
+                items.append(
+                    RemoteMedia(
+                        source_post_id=f"ig:{shortcode}",
+                        source_url=f"https://www.instagram.com/reel/{shortcode}/",
+                        caption=post.caption or "",
+                        hashtags=list(post.caption_hashtags or []),
+                        local_path=target,
+                    )
+                )
+            except Exception as exc:
+                logger.error("Falha ao baixar %s: %s", shortcode, exc)
+
+        logger.info("fetch_by_urls: %d Reel(s) baixado(s).", len(items))
         return items
 
     def _locate_video(self, shortcode: str) -> Optional[Path]:

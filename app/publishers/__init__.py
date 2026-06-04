@@ -15,8 +15,14 @@ def get_publisher(name: str | None = None) -> Publisher:
         from app.publishers.instagram_graph_publisher import InstagramGraphPublisher
 
         return InstagramGraphPublisher()
+    if name == "instagrapi":
+        from app.publishers.instagrapi_publisher import InstagrapiPublisher
 
-    raise ValueError(f"PUBLISHER desconhecido: {name!r} (use 'dry_run' ou 'instagram_graph')")
+        return InstagrapiPublisher()
+
+    raise ValueError(
+        f"PUBLISHER desconhecido: {name!r} (use 'dry_run', 'instagram_graph' ou 'instagrapi')"
+    )
 
 
 __all__ = ["Publisher", "PublishRequest", "PublishResult", "get_publisher"]

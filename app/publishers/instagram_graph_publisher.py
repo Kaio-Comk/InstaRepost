@@ -1,13 +1,18 @@
-"""Publisher OFICIAL via Instagram Graph API (Content Publishing API).
+"""Publisher OFICIAL via Instagram Content Publishing API.
 
-Este é o caminho compatível com as políticas da Meta. Requisitos:
-  - Conta Instagram Professional (Business/Creator) vinculada a uma Página.
-  - App da Meta com permissões instagram_basic + instagram_content_publish.
-  - IG_USER_ID e IG_ACCESS_TOKEN (token de longa duração) no .env.
-  - O vídeo precisa estar acessível por uma URL pública (PUBLIC_MEDIA_BASE_URL),
-    pois a API baixa a mídia a partir dessa URL — ela não aceita upload binário direto.
+Compatível com os DOIS caminhos da Meta (a base é configurável via IG_API_BASE):
+  - Login por Instagram (recomendado): IG_API_BASE=https://graph.instagram.com/v21.0
+    (sem Página do Facebook; token e IG User ID vêm do "API setup with Instagram login").
+  - Login por Facebook (clássico):     IG_API_BASE=https://graph.facebook.com/v21.0
+    (conta vinculada a uma Página; token do Graph API Explorer).
 
-Fluxo da API de Reels:
+Requisitos comuns:
+  - Conta Instagram Professional (Business/Creator).
+  - IG_USER_ID e IG_ACCESS_TOKEN (longa duração) no .env.
+  - O vídeo acessível por URL pública (PUBLIC_MEDIA_BASE_URL) — a API baixa a
+    mídia a partir dessa URL; não aceita upload binário direto.
+
+Fluxo de Reels:
   1. POST /{ig-user-id}/media           (media_type=REELS, video_url, caption) -> creation_id
   2. (poll) GET /{creation_id}?fields=status_code  até FINISHED
   3. POST /{ig-user-id}/media_publish   (creation_id) -> id do post publicado
@@ -24,8 +29,6 @@ from app.utils.logging_config import get_logger
 
 logger = get_logger(__name__)
 
-GRAPH_BASE = "https://graph.facebook.com/v19.0"
-
 
 class InstagramGraphPublisher(Publisher):
     name = "instagram_graph"
@@ -34,6 +37,7 @@ class InstagramGraphPublisher(Publisher):
         s = get_settings()
         self.ig_user_id = s.ig_user_id
         self.access_token = s.ig_access_token
+        self.base = s.ig_api_base.rstrip("/")
         if not self.ig_user_id or not self.access_token:
             raise RuntimeError(
                 "Credenciais da Graph API ausentes (IG_USER_ID / IG_ACCESS_TOKEN). "
@@ -67,7 +71,7 @@ class InstagramGraphPublisher(Publisher):
     # ---- Passos da API ----
     def _create_container(self, video_url: str, caption: str) -> str:
         resp = requests.post(
-            f"{GRAPH_BASE}/{self.ig_user_id}/media",
+            f"{self.base}/{self.ig_user_id}/media",
             data={
                 "media_type": "REELS",
                 "video_url": video_url,
@@ -79,10 +83,11 @@ class InstagramGraphPublisher(Publisher):
         resp.raise_for_status()
         return resp.json()["id"]
 
-    def _wait_until_ready(self, creation_id: str, attempts: int = 20, delay: int = 6) -> None:
+    def _wait_until_ready(self, creation_id: str, attempts: int = 10, delay: int = 30) -> None:
+        # Doc da Meta: consultar status ~1x/min, por no máximo 5 min.
         for _ in range(attempts):
             resp = requests.get(
-                f"{GRAPH_BASE}/{creation_id}",
+                f"{self.base}/{creation_id}",
                 params={"fields": "status_code", "access_token": self.access_token},
                 timeout=30,
             )
@@ -90,14 +95,14 @@ class InstagramGraphPublisher(Publisher):
             status = resp.json().get("status_code")
             if status == "FINISHED":
                 return
-            if status == "ERROR":
-                raise RuntimeError("Processamento da mídia falhou na Meta.")
+            if status in ("ERROR", "EXPIRED"):
+                raise RuntimeError(f"Processamento da mídia falhou na Meta (status={status}).")
             time.sleep(delay)
-        raise TimeoutError("Mídia não ficou pronta a tempo na Graph API.")
+        raise TimeoutError("Mídia não ficou pronta a tempo na API.")
 
     def _publish_container(self, creation_id: str) -> str:
         resp = requests.post(
-            f"{GRAPH_BASE}/{self.ig_user_id}/media_publish",
+            f"{self.base}/{self.ig_user_id}/media_publish",
             data={"creation_id": creation_id, "access_token": self.access_token},
             timeout=60,
         )

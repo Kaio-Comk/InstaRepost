@@ -69,9 +69,21 @@ class Settings(BaseSettings):
     ig_user_id: str = ""
     ig_access_token: str = ""
     public_media_base_url: str = ""
+    # Base da API oficial:
+    #   Login por Instagram (recomendado): https://graph.instagram.com/v25.0
+    #   Login por Facebook (clássico):     https://graph.facebook.com/v25.0
+    ig_api_base: str = "https://graph.instagram.com/v25.0"
+
+    # Publisher não-oficial (instagrapi) — publica na sua própria conta.
+    # ⚠️ Viola ToS da Meta e arrisca ban. Use uma sessão salva p/ reduzir challenges.
+    instagrapi_user: str = ""
+    instagrapi_password: str = ""
+    instagrapi_session_file: str = "data/instagrapi_session.json"
 
     # --- Scheduler ---
     poll_interval_seconds: int = 900
+    # Fila de URLs consumida pelo scheduler (modo instaloader): 1 link por linha.
+    url_queue_file: str = "data/queue.txt"
 
     # --- Web ---
     web_host: str = "127.0.0.1"
@@ -106,6 +118,14 @@ class Settings(BaseSettings):
     @property
     def caption_styles_path(self) -> Path:
         return BASE_DIR / "app" / "config" / "caption_styles.yaml"
+
+    @property
+    def url_queue_path(self) -> Path:
+        return self._abs(self.url_queue_file)
+
+    @property
+    def instagrapi_session_path(self) -> Path:
+        return self._abs(self.instagrapi_session_file)
 
     def ensure_dirs(self) -> None:
         """Cria os diretórios de trabalho se ainda não existirem."""

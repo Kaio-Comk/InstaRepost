@@ -52,6 +52,15 @@ def cmd_ingest(args) -> int:
     return 0
 
 
+def cmd_fetch(args) -> int:
+    report = PipelineService().run_ingestion_urls(args.urls, args.username)
+    logger.info(
+        "Fetch por URL: novos=%d processados=%d falhas=%d",
+        report.new_videos, report.processed, report.failed,
+    )
+    return 0
+
+
 def cmd_publish(_args) -> int:
     report = PipelineService().publish_approved()
     logger.info("Publicados: %d", report.published)
@@ -82,6 +91,11 @@ def build_parser() -> argparse.ArgumentParser:
     p_ing = sub.add_parser("ingest", help="Ciclo de ingestão/processamento")
     p_ing.add_argument("--username", default=None, help="Perfil alvo (default: TARGET_USERNAME)")
     p_ing.set_defaults(func=cmd_ingest)
+
+    p_fetch = sub.add_parser("fetch", help="Baixa Reels específicos por URL e processa")
+    p_fetch.add_argument("urls", nargs="+", help="URLs/shortcodes de Reels")
+    p_fetch.add_argument("--username", default=None, help="Perfil de origem (default: TARGET_USERNAME)")
+    p_fetch.set_defaults(func=cmd_fetch)
 
     sub.add_parser("publish", help="Publica aprovados").set_defaults(func=cmd_publish)
     sub.add_parser("web", help="Sobe o painel FastAPI").set_defaults(func=cmd_web)
