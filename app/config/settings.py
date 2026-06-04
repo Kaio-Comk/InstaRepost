@@ -86,7 +86,7 @@ class Settings(BaseSettings):
     url_queue_file: str = "data/queue.txt"
     # Descoberta automática: busca Reels novos do TARGET_USERNAME e enche a fila.
     auto_discovery: bool = False
-    discovery_amount: int = 8
+    discovery_amount: int = 30  # quantos Reels buscar por ciclo (folga p/ não perder bursts)
 
     # --- Web ---
     web_host: str = "127.0.0.1"
