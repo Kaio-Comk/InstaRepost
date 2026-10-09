@@ -8,7 +8,7 @@ Graph API Explorer) + App ID/Secret:
   3) imprime exatamente o que colar no .env (IG_USER_ID, IG_ACCESS_TOKEN).
 
 PRÉ-REQUISITOS (uma vez, feitos por você no app/Meta):
-  - @nethub_filmes convertida para conta Professional (Business/Creator);
+  - sua conta do Instagram convertida para Professional (Business/Creator);
   - conta vinculada a uma Página do Facebook;
   - App em developers.facebook.com com a Instagram Graph API;
   - no Graph API Explorer, gerar User Token com as permissões:
@@ -58,7 +58,7 @@ def main() -> int:
     # 2) Páginas + IG Business Account
     pages = _get("me/accounts", access_token=long_token).get("data", [])
     if not pages:
-        sys.exit("Nenhuma Página encontrada. Vincule @nethub_filmes a uma Página do Facebook.")
+        sys.exit("Nenhuma Página encontrada. Vincule sua conta do Instagram a uma Página do Facebook.")
 
     print("\n=== Páginas e contas Instagram vinculadas ===")
     found = []

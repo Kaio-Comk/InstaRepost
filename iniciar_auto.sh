@@ -10,7 +10,7 @@
 # =========================================================
 set -u
 export PATH="/usr/local/bin:/usr/bin:/bin:$PATH"  # systemd usa PATH mínimo
-cd "/home/kaio/Área de trabalho/InstaRepost" || exit 1
+cd "$(dirname "$(readlink -f "$0")")" || exit 1   # roda de onde o projeto estiver
 
 PORT=8021
 PY="./venv/bin/python"

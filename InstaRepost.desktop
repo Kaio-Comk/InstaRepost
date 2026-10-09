@@ -2,14 +2,13 @@
 Categories=Network;
 Comment[pt_BR]=Sobe o painel de aprovação do InstaRepost e abre no navegador
 Comment=Sobe o painel de aprovação do InstaRepost e abre no navegador
-Exec="/home/kaio/Área de trabalho/InstaRepost/iniciar_painel.sh"
+Exec=sh -c 'exec "$(dirname "$1")/iniciar_painel.sh"' sh %k
 GenericName[pt_BR]=InstaRepost Painel
 GenericName=InstaRepost Panel
 Icon=utilities-terminal
 MimeType=
 Name[pt_BR]=InstaRepost
 Name=InstaRepost
-Path=/home/kaio/Área de trabalho/InstaRepost
 StartupNotify=true
 Terminal=true
 Type=Application

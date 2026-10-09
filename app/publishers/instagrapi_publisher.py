@@ -1,7 +1,7 @@
 """Publisher NÃO-OFICIAL via instagrapi (API privada do Instagram).
 
 ⚠️  AVISO DE COMPLIANCE / RISCO
-   Publica fazendo login como a própria conta (@nethub_filmes) pela API privada,
+   Publica fazendo login como a sua própria conta pela API privada,
    por engenharia reversa. NÃO é a API oficial da Meta. PODE violar os Termos e
    resultar em LIMITAÇÃO ou BAN da conta — que aqui é a sua conta principal.
    Habilitado apenas via PUBLISHER=instagrapi, por sua conta e risco.

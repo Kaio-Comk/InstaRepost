@@ -163,8 +163,9 @@ systemctl --user daemon-reload
 systemctl --user enable --now instarepost.service
 loginctl enable-linger "$USER"     # roda mesmo sem login
 ```
-> Edite os caminhos no `.service` e no `iniciar_auto.sh` se o projeto não estiver em
-> `/home/kaio/Área de trabalho/InstaRepost`.
+> O `.service` espera o projeto em `~/InstaRepost` (`%h/InstaRepost`). Se estiver em outra
+> pasta, ajuste `WorkingDirectory` e `ExecStart`. Os scripts `iniciar_*.sh` acham a própria
+> pasta sozinhos.
 
 ### Ou manual
 ```bash
@@ -232,3 +233,13 @@ pytest      # banco em memória + IA mockada; não depende de Ollama/rede/Instag
 - **Túnel Cloudflare** (quick tunnel) muda de URL a cada start — o `iniciar_auto.sh`
   resolve sozinho. Para URL fixa, configure um túnel nomeado do Cloudflare.
 - **Token** renova sozinho; só falha se ficar > 60 dias sem o serviço rodar.
+
+---
+
+## 🤝 Contribuindo
+Melhorias são bem-vindas! Leia o [CONTRIBUTING.md](CONTRIBUTING.md) para preparar o ambiente,
+rodar os testes e abrir um pull request. Falhas de segurança: veja o [SECURITY.md](SECURITY.md).
+
+## 📄 Licença
+[GPL-3.0](LICENSE). Você pode usar, estudar, modificar e redistribuir o código. Quem
+distribuir uma versão modificada precisa mantê-la aberta, sob a mesma licença.
