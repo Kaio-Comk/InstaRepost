@@ -32,6 +32,20 @@ templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 app = FastAPI(title="InstaRepost — Painel de Aprovação")
 
+# Cabeçalhos que só existem quando a requisição chegou pelo túnel/proxy (Cloudflare etc.).
+_CABECALHOS_DE_PROXY = ("cf-connecting-ip", "cf-ray", "x-forwarded-for", "x-real-ip")
+
+
+@app.middleware("http")
+async def _so_media_pela_internet(request: Request, call_next):
+    """O túnel (`iniciar_auto.sh`) expõe a porta do painel inteiro, mas a Meta só precisa
+    de /media. Quem chega de fora (pelo túnel) não vê o painel nem pode aprovar ou
+    publicar: só o próprio computador (127.0.0.1, sem cabeçalho de proxy) acessa o resto."""
+    de_fora = any(h in request.headers for h in _CABECALHOS_DE_PROXY)
+    if de_fora and not request.url.path.startswith("/media/"):
+        return HTMLResponse("Acesso restrito ao computador local.", status_code=403)
+    return await call_next(request)
+
 
 @app.on_event("startup")
 def _startup() -> None:
